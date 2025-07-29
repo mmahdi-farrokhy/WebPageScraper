@@ -1,6 +1,5 @@
 package mmf;
 
-import com.opencsv.CSVWriter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -8,8 +7,8 @@ import org.jsoup.select.Elements;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
+import java.io.BufferedWriter;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +34,6 @@ public class Main {
             Elements cards = doc.select("article.flex.gap-4.w-full"); // Matches the <article> container
 
 
-
             for (Element card : cards) {
                 String title = card.select("h3.Text_h3__UWp9b").text(); // <h3> with specific class
                 String address = card.select("div.flex.justify-start.gap-1 > span.text-xs").first().text();
@@ -51,9 +49,23 @@ public class Main {
 
         driver.quit();
 
-        try (CSVWriter writer = new CSVWriter(
-                new OutputStreamWriter(new FileOutputStream("t4f_scenarios.csv"), StandardCharsets.UTF_8))) {
-            writer.writeAll(records);
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(
+                        new FileOutputStream("t4f_scenarios.txt"),
+                        StandardCharsets.UTF_8
+                )
+        )) {
+
+            // Write header (optional)
+            writer.write("Title,City,Difficulty,Scare Level,Link");
+            writer.newLine();
+
+            // Write each record
+            for (String[] record : records.subList(1, records.size())) { // Skip header if already in 'records'
+                String line = String.join(",", record); // Comma-separated
+                writer.write(line);
+                writer.newLine();
+            }
         }
 
         System.out.println("✅ Data saved to t4f_scenarios.csv");
